@@ -22,8 +22,9 @@ set -e
 source VERSION
 
 REPO=https://repo.mysql.com; [ -n "$1" ] && REPO=$1
+MAJOR_VERSIONS=("${!MYSQL_CLUSTER_VERSIONS[@]}"); [ -n "$2" ] && MAJOR_VERSIONS=("${@:2}")
 
-for MAJOR_VERSION in "${!MYSQL_CLUSTER_VERSIONS[@]}"; do
+for MAJOR_VERSION in "${MAJOR_VERSIONS[@]}"; do
   # Dockerfile
   sed 's#%%MYSQL_CLUSTER_PACKAGE%%#'"mysql-cluster-community-server-minimal-${MYSQL_CLUSTER_VERSIONS[${MAJOR_VERSION}]}"'#g' template/Dockerfile > tmpFile
   sed -i 's#%%MYSQL_SHELL_PACKAGE%%#'"mysql-shell-${MYSQL_SHELL_VERSIONS[${MAJOR_VERSION}]}"'#g' tmpFile
