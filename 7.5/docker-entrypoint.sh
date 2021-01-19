@@ -16,7 +16,7 @@
 
 set -e
 
-echo "[Entrypoint] MySQL Docker Image 7.5.20-1.1.18-cluster"
+echo "[Entrypoint] MySQL Docker Image 7.5.21-1.1.19-cluster"
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -190,7 +190,7 @@ password=healthcheckpass
 EOF
 	touch /mysql-init-complete
 	chown -R mysql:mysql "$DATADIR"
-	echo "[Entrypoint] Starting MySQL 7.5.20-1.1.18-cluster"
+	echo "[Entrypoint] Starting MySQL 7.5.21-1.1.19-cluster"
 
 elif [ "$1" == "ndb_mgmd" ]; then
 	echo "[Entrypoint] Starting ndb_mgmd"

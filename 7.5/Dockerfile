@@ -15,8 +15,8 @@
 
 FROM oraclelinux:7-slim
 
-ARG MYSQL_CLUSTER_PACKAGE=mysql-cluster-community-server-minimal-7.5.20
-ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.22
+ARG MYSQL_CLUSTER_PACKAGE=mysql-cluster-community-server-minimal-7.5.21
+ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.23
 
 # Install server
 RUN yum install -y \
