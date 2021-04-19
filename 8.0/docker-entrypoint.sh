@@ -15,7 +15,13 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 set -e
 
-echo "[Entrypoint] MySQL Docker Image 8.0.23-1.1.19"
+echo "[Entrypoint] MySQL Docker Image 8.0.23"
+echo "[Entrypoint] User ID: $(id)"
+
+echo "[Entrypoint] Cleaning up status files"
+rm -f /var/lib/mysql/mysql-init-complete
+rm -f /var/lib/mysql/healthcheck.cnf
+
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -69,8 +75,6 @@ if [ "$1" = 'mysqld' ]; then
 			MYSQL_RANDOM_ROOT_PASSWORD=true
 			MYSQL_ONETIME_PASSWORD=true
 		fi
-		mkdir -p "$DATADIR"
-		chown -R mysql:mysql "$DATADIR"
 
 		echo '[Entrypoint] Initializing database'
 		"$@" --initialize-insecure
@@ -80,8 +84,8 @@ if [ "$1" = 'mysqld' ]; then
 
 		# To avoid using password on commandline, put it in a temporary file.
 		# The file is only populated when and if the root password is set.
-		PASSFILE=$(mktemp -u /var/lib/mysql-files/XXXXXXXXXX)
-		install /dev/null -m0600 -omysql -gmysql "$PASSFILE"
+		PASSFILE=$(mktemp -u /tmp/XXXXXXXXXX)
+		install /dev/null -m0600 "$PASSFILE"
 		# Define the client command used throughout the script
 		# "SET @@SESSION.SQL_LOG_BIN=0;" is required for products like group replication to work properly
 		mysql=( mysql --defaults-extra-file="$PASSFILE" --protocol=socket -uroot -hlocalhost --socket="$SOCKET" --init-command="SET @@SESSION.SQL_LOG_BIN=0;")
@@ -167,8 +171,8 @@ EOF
 				echo "[Entrypoint] User expiration is only supported in MySQL 5.6+"
 			else
 				echo "[Entrypoint] Setting root user as expired. Password will need to be changed before database can be used."
-				SQL=$(mktemp -u /var/lib/mysql-files/XXXXXXXXXX)
-				install /dev/null -m0600 -omysql -gmysql "$SQL"
+				SQL=$(mktemp -u /tmp/XXXXXXXXXX)
+				install /dev/null -m0600 "$SQL"
 				if [ ! -z "$MYSQL_ROOT_HOST" ]; then
 					cat << EOF > "$SQL"
 ALTER USER 'root'@'${MYSQL_ROOT_HOST}' PASSWORD EXPIRE;
@@ -192,16 +196,15 @@ EOF
 	# Used by healthcheck to make sure it doesn't mistakenly report container
 	# healthy during startup
 	# Put the password into the temporary config file
-	touch /healthcheck.cnf
-	cat >"/healthcheck.cnf" <<EOF
+	touch /var/lib/mysql/healthcheck.cnf
+	cat >"/var/lib/mysql/healthcheck.cnf" <<EOF
 [client]
 user=healthchecker
 socket=${SOCKET}
 password=healthcheckpass
 EOF
-	touch /mysql-init-complete
-	chown -R mysql:mysql "$DATADIR"
-	echo "[Entrypoint] Starting MySQL 8.0.23-1.1.19"
+	touch /var/lib/mysql/mysql-init-complete
+	echo "[Entrypoint] Starting MySQL 8.0.23"
 fi
 
 env MYSQLD_PARENT_PID=$$ "$@"
