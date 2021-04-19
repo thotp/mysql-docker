@@ -19,26 +19,22 @@ user=${MYSQL_USER}
 
 bind-address=0.0.0.0
 port=3306
+
 max-connections=200
+default-time-zone='+00:00'
 
 datadir=/var/lib/mysql
-
-log-bin=/var/log/mysql/bin.log
-log-error=/var/log/mysql/error.log
-
-general-log=1
-general-log-file=/var/log/mysql/general.log
-
-slow-query-log=1
-slow-query-log-file=/var/log/mysql/slowquery.log
 
 character-set-server=utf8mb4
 collation-server=utf8mb4_unicode_ci
 
-default-time-zone='00:00'
+log-bin=/var/log/mysql/bin.log
+log-error=/var/log/mysql/error.log
+general-log=1
+general-log-file=/var/log/mysql/general.log
+slow-query-log=1
+slow-query-log-file=/var/log/mysql/slowquery.log
 EOF
-
-chmod 600 /etc/mysql/my.cnf
 
 #DOCKER_HOST_IP=$(ifconfig docker0 | grep "inet 172." | xargs | cut -d' ' -f2)
 #echo "Docker Host IP: ${DOCKER_HOST_IP}"
