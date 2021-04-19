@@ -41,7 +41,8 @@ EOF
 
 MYSQL_USER_ID=$(echo "${MYSQL_USER}" | xargs id -u)
 MYSQL_GROUP_ID=$(echo "${MYSQL_GROUP}" | xargs getent group | cut -d: -f3)
-docker run -it --rm --name=mysql \
+
+docker run -d --restart=unless-stopped --name=mysql \
 	-p ${HOST_BIND_ADDRESS}:3306:3306 \
 	-v /etc/mysql/my.cnf:/etc/my.cnf:ro \
 	-v /var/lib/mysql/:/var/lib/mysql \
