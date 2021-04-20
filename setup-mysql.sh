@@ -6,14 +6,17 @@ MYSQL_ROOT_PASSWORD=root
 MYSQL_USER=mysql
 MYSQL_GROUP=mysql
 
-rm -rf /var/lib/mysql /var/log/mysql
-mkdir -p /var/lib/mysql /var/log/mysql
-chown -R ${MYSQL_USER}:${MYSQL_GROUP} /var/lib/mysql /var/log/mysql
+CONFIG_DIR=/mnt/db/mysql
+DATA_DIR=/mnt/db/mysql/data
+LOG_DIR=/mnt/db/mysql/log
 
-rm -rf /etc/mysql
-mkdir -p /etc/mysql
+rm -rf ${DATA_DIR} ${LOG_DIR}
+mkdir -p ${DATA_DIR} ${LOG_DIR}
+chown -R ${MYSQL_USER}:${MYSQL_GROUP} ${DATA_DIR} ${LOG_DIR}
 
-cat >"/etc/mysql/my.cnf"<<EOF
+MY_CNF="${CONFIG_DIR}/my.cnf"
+
+cat >"${MY_CNF}"<<EOF
 [mysqld]
 user=${MYSQL_USER}
 
@@ -36,19 +39,16 @@ slow-query-log=1
 slow-query-log-file=/var/log/mysql/slowquery.log
 EOF
 
-#DOCKER_HOST_IP=$(ifconfig docker0 | grep "inet 172." | xargs | cut -d' ' -f2)
-#echo "Docker Host IP: ${DOCKER_HOST_IP}"
-
 MYSQL_USER_ID=$(echo "${MYSQL_USER}" | xargs id -u)
 MYSQL_GROUP_ID=$(echo "${MYSQL_GROUP}" | xargs getent group | cut -d: -f3)
 
 docker run -d --restart=unless-stopped --name=mysql \
 	-p ${HOST_BIND_ADDRESS}:3306:3306 \
-	-v /etc/mysql/my.cnf:/etc/my.cnf:ro \
-	-v /var/lib/mysql/:/var/lib/mysql \
-	-v /var/log/mysql/:/var/log/mysql/ \
+	-v ${MY_CNF}:/etc/my.cnf:ro \
+	-v ${DATA_DIR}:/var/lib/mysql \
+	-v ${LOG_DIR}:/var/log/mysql/ \
 	-e MYSQL_ONETIME_PASSWORD=yes \
 	-e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
 	-e MYSQL_ROOT_HOST='%' \
 	-u ${MYSQL_USER_ID}:${MYSQL_GROUP_ID} \
-	mysql-server:8.0.23
+	thotp/mysql-server:8.0.23
