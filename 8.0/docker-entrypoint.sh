@@ -18,10 +18,6 @@ set -e
 echo "[Entrypoint] MySQL Docker Image 8.0.23"
 echo "[Entrypoint] User ID: $(id)"
 
-echo "[Entrypoint] Cleaning up status files"
-rm -f /var/lib/mysql/mysql-init-complete
-rm -f /var/lib/mysql/healthcheck.cnf
-
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -67,7 +63,8 @@ if [ "$1" = 'mysqld' ]; then
 
 		"$@" --daemonize --skip-networking --socket="$SOCKET"
 
-		PASSFILE=$(mktemp)
+		PASSFILE=$(mktemp /var/lib/mysql-files/tmp-XXXXXXXX )
+
 		chmod 600 $PASSFILE
 		# Define the client command used throughout the script
 		# "SET @@SESSION.SQL_LOG_BIN=0;" is required for products like group replication to work properly
@@ -131,7 +128,7 @@ EOF
 				echo "[Entrypoint] User expiration is only supported in MySQL 5.6+"
 			else
 				echo "[Entrypoint] Setting root user as expired. Password will need to be changed before database can be used."
-				SQL=$(mktemp)
+				SQL=$(mktemp /var/lib/mysql-files/tmp-XXXXXXXXXX )
 				chmod 600 "$SQL"
 				if [ ! -z "$MYSQL_ROOT_HOST" ]; then
 					cat << EOF > "$SQL"
@@ -156,14 +153,14 @@ EOF
 	# Used by healthcheck to make sure it doesn't mistakenly report container
 	# healthy during startup
 	# Put the password into the temporary config file
-	touch /var/lib/mysql/healthcheck.cnf
-	cat >"/var/lib/mysql/healthcheck.cnf" <<EOF
+	touch /var/lib/mysql-files/healthcheck.cnf
+	cat >"/var/lib/mysql-files/healthcheck.cnf" <<EOF
 [client]
 user=healthchecker
 socket=${SOCKET}
 password=healthcheckpass
 EOF
-	touch /var/lib/mysql/mysql-init-complete
+	touch /var/lib/mysql-files/mysql-init-complete
 	echo "[Entrypoint] Starting MySQL 8.0.23"
 fi
 
