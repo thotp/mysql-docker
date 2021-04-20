@@ -131,8 +131,8 @@ EOF
 				echo "[Entrypoint] User expiration is only supported in MySQL 5.6+"
 			else
 				echo "[Entrypoint] Setting root user as expired. Password will need to be changed before database can be used."
-				SQL=$(mktemp -u /tmp/XXXXXXXXXX)
-				install /dev/null -m0600 "$SQL"
+				SQL=$(mktemp)
+				chmod 600 "$SQL"
 				if [ ! -z "$MYSQL_ROOT_HOST" ]; then
 					cat << EOF > "$SQL"
 ALTER USER 'root'@'${MYSQL_ROOT_HOST}' PASSWORD EXPIRE;
