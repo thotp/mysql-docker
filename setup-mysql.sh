@@ -6,9 +6,9 @@ MYSQL_ROOT_PASSWORD=root
 MYSQL_USER=mysql
 MYSQL_GROUP=mysql
 
-CONFIG_DIR=/mnt/db/mysql
-DATA_DIR=/mnt/db/mysql/data
-LOG_DIR=/mnt/db/mysql/log
+CONFIG_DIR=/mysql
+DATA_DIR=/mysql/data
+LOG_DIR=/var/log/mysql
 
 rm -rf ${DATA_DIR} ${LOG_DIR}
 mkdir -p ${DATA_DIR} ${LOG_DIR}
@@ -46,7 +46,7 @@ docker run -d --restart=unless-stopped --name=mysql \
 	-p ${HOST_BIND_ADDRESS}:3306:3306 \
 	-v ${MY_CNF}:/etc/my.cnf:ro \
 	-v ${DATA_DIR}:/var/lib/mysql \
-	-v ${LOG_DIR}:/var/log/mysql/ \
+	-v ${LOG_DIR}:/var/log/mysql \
 	-e MYSQL_ONETIME_PASSWORD=yes \
 	-e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
 	-e MYSQL_ROOT_HOST='%' \
