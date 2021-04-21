@@ -72,7 +72,7 @@ EOF
 MYSQL_USER_ID=$(echo "${MYSQL_USER}" | xargs id -u)
 MYSQL_GROUP_ID=$(echo "${MYSQL_GROUP}" | xargs getent group | cut -d: -f3)
 
-docker run -d --restart=unless-stopped --name=mysql \
+docker run -d --restart=unless-stopped --name=mysql-server \
 	--network=host \
 	-v ${MY_CNF}:/etc/my.cnf:ro \
 	-v ${DATA_DIR}:/var/lib/mysql \
